@@ -144,25 +144,40 @@ export default function Deals() {
     e.preventDefault();
     
     try {
-      const payload: any = {
-        customer_company_name: addFormData.customer_company_name,
-        customer_spoc: addFormData.customer_spoc,
-        customer_company_url: addFormData.customer_company_url,
-        customer_spoc_email: addFormData.customer_spoc_email,
-        customer_spoc_phone: addFormData.customer_spoc_phone,
-        revenue_arr_estimation: parseFloat(addFormData.revenue_arr_estimation) || 0,
-        status: addFormData.status,
-        comments: addFormData.comments,
-      };
-
-      // Add partner_company_id if user is admin or PAM
-      if (currentUser?.role === 'Portal Administrator' || currentUser?.role === 'Partner Account Manager') {
-        if (!addFormData.partner_company_id) {
-          toast.error('Please select a partner company');
-          return;
-        }
-        payload.partner_company_id = parseInt(addFormData.partner_company_id);
+      // Validate required fields
+      if (!addFormData.partner_company_id) {
+        toast.error('Please select a partner company');
+        return;
       }
+      if (!addFormData.customer_company_name) {
+        toast.error('Customer company name is required');
+        return;
+      }
+      if (!addFormData.customer_spoc) {
+        toast.error('Customer SPOC is required');
+        return;
+      }
+      if (!addFormData.customer_spoc_email) {
+        toast.error('Customer SPOC email is required');
+        return;
+      }
+      if (!addFormData.revenue_arr_estimation) {
+        toast.error('Revenue estimation is required');
+        return;
+      }
+
+      // Match backend field names exactly
+      const payload = {
+        company_id: parseInt(addFormData.partner_company_id),
+        customer_company: addFormData.customer_company_name,
+        customer_spoc: addFormData.customer_spoc,
+        customer_company_url: addFormData.customer_company_url || '',
+        customer_spoc_email: addFormData.customer_spoc_email,
+        customer_spoc_phone: addFormData.customer_spoc_phone || '',
+        revenue_arr: parseFloat(addFormData.revenue_arr_estimation),
+        status: addFormData.status,
+        comments: addFormData.comments || '',
+      };
 
       await apiRequest('/deals', {
         method: 'POST',
