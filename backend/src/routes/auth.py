@@ -32,6 +32,7 @@ def login():
             'user_id': user.id,
             'email': user.email,
             'role': user.role,
+            'company_id': user.company_id,
             'exp': datetime.utcnow() + timedelta(days=7)
         }, SECRET_KEY, algorithm='HS256')
         

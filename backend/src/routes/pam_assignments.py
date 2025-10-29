@@ -8,27 +8,33 @@ bp = Blueprint('pam_assignments', __name__)
 
 @bp.route('', methods=['GET'])
 def get_pam_assignments():
-    """Get all PAM assignments"""
+    """Get all PAM users and their company assignments"""
     try:
         # Get all PAM users
         pams = User.query.filter_by(role='Partner Account Manager').all()
         
+        # Get all companies for reference
+        all_companies = Company.query.all()
+        companies_dict = {c.id: c.name for c in all_companies}
+        
         assignments = []
         for pam in pams:
-            # Get companies assigned to this PAM
-            companies = Company.query.filter_by(id=pam.company_id).all() if pam.company_id else []
-            
-            assignments.append({
+            assignment = {
                 'id': pam.id,
                 'pam_id': pam.id,
                 'pam_name': pam.username,
                 'pam_email': pam.email,
                 'company_id': pam.company_id,
-                'companies': [{'id': c.id, 'name': c.name} for c in companies],
+                'company_name': companies_dict.get(pam.company_id) if pam.company_id else None,
                 'created_at': pam.created_at.isoformat() if pam.created_at else None
-            })
+            }
+            assignments.append(assignment)
         
-        return jsonify(assignments), 200
+        return jsonify({
+            'assignments': assignments,
+            'pams': [{'id': p.id, 'name': p.username, 'email': p.email} for p in pams],
+            'companies': [{'id': c.id, 'name': c.name} for c in all_companies]
+        }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -48,6 +54,11 @@ def create_pam_assignment():
         if not pam or pam.role != 'Partner Account Manager':
             return jsonify({'error': 'Invalid PAM user'}), 400
         
+        # Verify company exists
+        company = Company.query.get(data['company_id'])
+        if not company:
+            return jsonify({'error': 'Invalid company'}), 400
+        
         # Update PAM's company assignment
         pam.company_id = data['company_id']
         db.session.commit()
@@ -57,7 +68,8 @@ def create_pam_assignment():
             'assignment': {
                 'pam_id': pam.id,
                 'pam_name': pam.username,
-                'company_id': pam.company_id
+                'company_id': pam.company_id,
+                'company_name': company.name
             }
         }), 201
         
@@ -65,12 +77,12 @@ def create_pam_assignment():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/<int:assignment_id>', methods=['DELETE'])
-def delete_pam_assignment(assignment_id):
-    """Remove a PAM assignment"""
+@bp.route('/<int:pam_id>', methods=['DELETE'])
+def delete_pam_assignment(pam_id):
+    """Remove a PAM's company assignment"""
     try:
         # Get PAM user
-        pam = User.query.get(assignment_id)
+        pam = User.query.get(pam_id)
         if not pam:
             return jsonify({'error': 'PAM not found'}), 404
         
@@ -79,6 +91,46 @@ def delete_pam_assignment(assignment_id):
         db.session.commit()
         
         return jsonify({'message': 'PAM assignment removed successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/<int:pam_id>', methods=['PUT'])
+def update_pam_assignment(pam_id):
+    """Update a PAM's company assignment"""
+    try:
+        data = request.get_json()
+        
+        # Get PAM user
+        pam = User.query.get(pam_id)
+        if not pam or pam.role != 'Partner Account Manager':
+            return jsonify({'error': 'Invalid PAM user'}), 404
+        
+        # Verify company exists
+        if 'company_id' in data:
+            if data['company_id']:
+                company = Company.query.get(data['company_id'])
+                if not company:
+                    return jsonify({'error': 'Invalid company'}), 400
+            pam.company_id = data['company_id']
+        
+        db.session.commit()
+        
+        company_name = None
+        if pam.company_id:
+            company = Company.query.get(pam.company_id)
+            company_name = company.name if company else None
+        
+        return jsonify({
+            'message': 'PAM assignment updated successfully',
+            'assignment': {
+                'pam_id': pam.id,
+                'pam_name': pam.username,
+                'company_id': pam.company_id,
+                'company_name': company_name
+            }
+        }), 200
         
     except Exception as e:
         db.session.rollback()
