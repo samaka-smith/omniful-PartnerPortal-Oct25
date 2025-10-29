@@ -1,5 +1,6 @@
 // API configuration and helper functions
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://5000-iv4hm36xbd5xvrj8xppqf-8e345a94.manusvm.computer/api';
+// Use relative path so Nginx proxy handles the routing
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Get auth token from localStorage
 export const getAuthToken = (): string | null => {
