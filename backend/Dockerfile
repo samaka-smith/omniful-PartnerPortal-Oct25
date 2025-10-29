@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create database directory
-RUN mkdir -p src/database
+# Create database directory with proper permissions
+RUN mkdir -p src/database && chmod 777 src/database
 
 # Expose port
 EXPOSE 5000

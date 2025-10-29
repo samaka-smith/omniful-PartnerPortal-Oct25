@@ -12,7 +12,9 @@ def create_app():
     
     # Configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'asdf#FGSgvasgf$5$WGT')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///src/database/app.db'
+    # Use absolute path for database in container
+    db_path = os.path.join(os.getcwd(), 'src', 'database', 'app.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Initialize CORS
