@@ -42,15 +42,26 @@ class Company(db.Model):
     website = db.Column(db.String(255))
     contact_email = db.Column(db.String(120))
     contact_phone = db.Column(db.String(50))
+    published = db.Column(db.Boolean, default=False)
+    tags = db.Column(db.String(500))  # Comma-separated tags
+    pam_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
+        # Get PAM name if assigned
+        pam_user = User.query.get(self.pam_id) if self.pam_id else None
+        pam_name = pam_user.username if pam_user else None
+        
         return {
             'id': self.id,
             'name': self.name,
             'website': self.website,
             'contact_email': self.contact_email,
             'contact_phone': self.contact_phone,
+            'published': self.published,
+            'tags': self.tags,
+            'pam_id': self.pam_id,
+            'pam_name': pam_name,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -71,10 +82,16 @@ class Deal(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def to_dict(self):
+        # Get partner company name
+        partner_company = Company.query.get(self.company_id)
+        partner_company_name = partner_company.name if partner_company else None
+        
         return {
             'id': self.id,
             'company_id': self.company_id,
+            'partner_company_name': partner_company_name,
             'customer_company': self.customer_company,
+            'customer_company_name': self.customer_company,  # Alias for frontend
             'customer_company_url': self.customer_company_url,
             'customer_spoc': self.customer_spoc,
             'customer_spoc_email': self.customer_spoc_email,
@@ -107,6 +124,31 @@ class Target(db.Model):
             'target_value': self.target_value,
             'target_period': self.target_period,
             'description': self.description or '',
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class DealNote(db.Model):
+    __tablename__ = 'deal_notes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    deal_id = db.Column(db.Integer, db.ForeignKey('deals.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    note_text = db.Column(db.Text, nullable=False)
+    note_type = db.Column(db.String(50), default='general')  # general, status_change, etc.
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        # Get user name
+        user = User.query.get(self.user_id)
+        user_name = user.username if user else 'Unknown'
+        
+        return {
+            'id': self.id,
+            'deal_id': self.deal_id,
+            'user_id': self.user_id,
+            'user_name': user_name,
+            'note_text': self.note_text,
+            'note_type': self.note_type,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

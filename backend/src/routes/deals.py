@@ -2,7 +2,7 @@
 Deals management routes
 """
 from flask import Blueprint, request, jsonify
-from src.models.database import db, Deal
+from src.models.database import db, Deal, Company, DealNote, User
 
 bp = Blueprint('deals', __name__)
 
@@ -104,5 +104,48 @@ def get_archived_deals():
         deals = Deal.query.filter(Deal.status.in_(['Won', 'Lost'])).all()
         return jsonify([deal.to_dict() for deal in deals]), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/<int:deal_id>/notes', methods=['GET'])
+def get_deal_notes(deal_id):
+    """Get notes for a deal"""
+    try:
+        notes = DealNote.query.filter_by(deal_id=deal_id).order_by(DealNote.created_at.desc()).all()
+        return jsonify([note.to_dict() for note in notes]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/<int:deal_id>/notes', methods=['POST'])
+def add_deal_note(deal_id):
+    """Add a note to a deal"""
+    try:
+        # Verify deal exists
+        deal = Deal.query.get(deal_id)
+        if not deal:
+            return jsonify({'error': 'Deal not found'}), 404
+        
+        data = request.get_json()
+        
+        # Get user_id from token (for now, use a default)
+        # TODO: Extract from JWT token
+        user_id = data.get('user_id', 1)  # Default to admin for now
+        
+        note = DealNote(
+            deal_id=deal_id,
+            user_id=user_id,
+            note_text=data.get('note_text', ''),
+            note_type=data.get('note_type', 'general')
+        )
+        
+        db.session.add(note)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Note added successfully',
+            'note': note.to_dict()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 

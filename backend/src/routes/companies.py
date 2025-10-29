@@ -32,7 +32,10 @@ def create_company():
             name=data['name'],
             website=data.get('website'),
             contact_email=data.get('contact_email'),
-            contact_phone=data.get('contact_phone')
+            contact_phone=data.get('contact_phone'),
+            published=data.get('published', False),
+            tags=data.get('tags', ''),
+            pam_id=data.get('pam_id')
         )
         
         db.session.add(company)
@@ -65,6 +68,12 @@ def update_company(company_id):
             company.contact_email = data['contact_email']
         if 'contact_phone' in data:
             company.contact_phone = data['contact_phone']
+        if 'published' in data:
+            company.published = data['published']
+        if 'tags' in data:
+            company.tags = data['tags']
+        if 'pam_id' in data:
+            company.pam_id = data['pam_id']
         
         db.session.commit()
         
