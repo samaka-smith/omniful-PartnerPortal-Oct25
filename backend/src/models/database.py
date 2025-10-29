@@ -52,14 +52,19 @@ class Company(db.Model):
         pam_user = User.query.get(self.pam_id) if self.pam_id else None
         pam_name = pam_user.username if pam_user else None
         
+        # Convert tags string to array
+        tags_array = []
+        if self.tags:
+            tags_array = [tag.strip() for tag in self.tags.split(',') if tag.strip()]
+        
         return {
             'id': self.id,
             'name': self.name,
             'website': self.website,
             'contact_email': self.contact_email,
             'contact_phone': self.contact_phone,
-            'published': self.published,
-            'tags': self.tags,
+            'published': self.published if self.published is not None else False,
+            'tags': tags_array,
             'pam_id': self.pam_id,
             'pam_name': pam_name,
             'created_at': self.created_at.isoformat() if self.created_at else None
@@ -76,8 +81,11 @@ class Deal(db.Model):
     customer_spoc_email = db.Column(db.String(120), nullable=False)
     customer_spoc_phone = db.Column(db.String(50))
     revenue_arr = db.Column(db.Float, nullable=False)
+    revenue_actual = db.Column(db.Float, nullable=True)  # Actual revenue when deal is won
     status = db.Column(db.String(50), nullable=False, default='Open')
     comments = db.Column(db.Text)
+    proof_of_engagement = db.Column(db.String(500))  # File path/URL
+    proof_of_sale = db.Column(db.String(500))  # File path/URL
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -97,8 +105,11 @@ class Deal(db.Model):
             'customer_spoc_email': self.customer_spoc_email,
             'customer_spoc_phone': self.customer_spoc_phone,
             'revenue_arr': self.revenue_arr,
+            'revenue_actual': self.revenue_actual,
             'status': self.status,
             'comments': self.comments,
+            'proof_of_engagement': self.proof_of_engagement,
+            'proof_of_sale': self.proof_of_sale,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -116,10 +127,23 @@ class Target(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
+        # Get entity name based on type
+        entity_name = 'Unknown'
+        if self.target_type == 'PAM':
+            user = User.query.get(self.target_entity_id)
+            entity_name = user.username if user else 'Unknown PAM'
+        elif self.target_type == 'Company':
+            company = Company.query.get(self.target_entity_id)
+            entity_name = company.name if company else 'Unknown Company'
+        elif self.target_type == 'SPOC':
+            user = User.query.get(self.target_entity_id)
+            entity_name = user.username if user else 'Unknown SPOC'
+        
         return {
             'id': self.id,
             'target_type': self.target_type,
             'target_entity_id': self.target_entity_id,
+            'target_entity_name': entity_name,
             'target_metric': self.target_metric,
             'target_value': self.target_value,
             'target_period': self.target_period,

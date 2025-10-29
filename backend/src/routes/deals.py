@@ -65,7 +65,7 @@ def update_deal(deal_id):
         # Update fields
         for field in ['customer_company', 'customer_company_url', 'customer_spoc',
                      'customer_spoc_email', 'customer_spoc_phone', 'revenue_arr',
-                     'status', 'comments']:
+                     'revenue_actual', 'status', 'comments', 'proof_of_engagement', 'proof_of_sale']:
             if field in data:
                 setattr(deal, field, data[field])
         

@@ -4,7 +4,7 @@ Omniful Partner Portal - Main Application
 from flask import Flask, jsonify
 from flask_cors import CORS
 from src.models.database import db, init_db
-from src.routes import auth, users, companies, deals, targets, payouts, pam_assignments
+from src.routes import auth, users, companies, deals, targets, payouts, pam_assignments, analytics
 import os
 
 def create_app():
@@ -35,6 +35,7 @@ def create_app():
     app.register_blueprint(targets.bp, url_prefix='/api/targets')
     app.register_blueprint(payouts.bp, url_prefix='/api/payouts')
     app.register_blueprint(pam_assignments.bp, url_prefix='/api/pam-assignments')
+    app.register_blueprint(analytics.bp, url_prefix='/api/analytics')
     
     # Health check endpoint
     @app.route('/api/health')

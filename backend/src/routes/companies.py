@@ -28,13 +28,21 @@ def create_company():
         if Company.query.filter_by(name=data['name']).first():
             return jsonify({'error': 'Company with this name already exists'}), 400
         
+        # Handle tags - convert array to comma-separated string
+        tags_str = ''
+        if 'tags' in data:
+            if isinstance(data['tags'], list):
+                tags_str = ','.join(data['tags'])
+            else:
+                tags_str = data['tags']
+        
         company = Company(
             name=data['name'],
             website=data.get('website'),
             contact_email=data.get('contact_email'),
             contact_phone=data.get('contact_phone'),
             published=data.get('published', False),
-            tags=data.get('tags', ''),
+            tags=tags_str,
             pam_id=data.get('pam_id')
         )
         
@@ -71,7 +79,11 @@ def update_company(company_id):
         if 'published' in data:
             company.published = data['published']
         if 'tags' in data:
-            company.tags = data['tags']
+            # Handle tags - convert array to comma-separated string
+            if isinstance(data['tags'], list):
+                company.tags = ','.join(data['tags'])
+            else:
+                company.tags = data['tags']
         if 'pam_id' in data:
             company.pam_id = data['pam_id']
         

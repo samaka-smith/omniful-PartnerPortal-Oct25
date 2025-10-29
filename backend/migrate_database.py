@@ -44,6 +44,35 @@ try:
         else:
             raise
     
+    # Add columns to deals table
+    print("\nAdding columns to deals table...")
+    try:
+        cursor.execute("ALTER TABLE deals ADD COLUMN revenue_actual REAL")
+        print("✅ Added 'revenue_actual' column")
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" in str(e):
+            print("⏭️  'revenue_actual' column already exists")
+        else:
+            raise
+    
+    try:
+        cursor.execute("ALTER TABLE deals ADD COLUMN proof_of_engagement TEXT")
+        print("✅ Added 'proof_of_engagement' column")
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" in str(e):
+            print("⏭️  'proof_of_engagement' column already exists")
+        else:
+            raise
+    
+    try:
+        cursor.execute("ALTER TABLE deals ADD COLUMN proof_of_sale TEXT")
+        print("✅ Added 'proof_of_sale' column")
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" in str(e):
+            print("⏭️  'proof_of_sale' column already exists")
+        else:
+            raise
+    
     # Create deal_notes table if it doesn't exist
     print("\nCreating deal_notes table...")
     cursor.execute("""
