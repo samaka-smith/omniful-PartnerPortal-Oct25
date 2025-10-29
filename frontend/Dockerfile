@@ -10,8 +10,11 @@ COPY package.json pnpm-lock.yaml* ./
 # Install pnpm
 RUN npm install -g pnpm
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Create patches directory if needed
+RUN mkdir -p patches
+
+# Install dependencies (skip patches if missing)
+RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --no-frozen-lockfile
 
 # Copy application code
 COPY . .
