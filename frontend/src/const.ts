@@ -1,4 +1,6 @@
-export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+// Shared constants
+export const COOKIE_NAME = "manus_auth_token";
+export const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "App";
 
