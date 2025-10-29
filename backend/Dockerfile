@@ -29,5 +29,7 @@ ENV FLASK_APP=src.main:app
 ENV PYTHONUNBUFFERED=1
 
 # Run with Gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "src.main:app"]
+# Use single worker to prevent database initialization race conditions
+# Can be increased after first successful start
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "--preload", "src.main:app"]
 

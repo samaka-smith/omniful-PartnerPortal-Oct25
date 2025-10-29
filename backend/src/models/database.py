@@ -114,16 +114,24 @@ def init_db():
     """Initialize database and create default admin user"""
     db.create_all()
     
-    # Check if admin user exists
-    admin = User.query.filter_by(email='mahmoud@portal.omniful').first()
-    if not admin:
-        admin = User(
-            username='Mahmoud Portal Admin',
-            email='mahmoud@portal.omniful',
-            role='Portal Administrator'
-        )
-        admin.set_password('Admin123')
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin user created successfully")
+    try:
+        # Check if admin user exists
+        admin = User.query.filter_by(email='mahmoud@portal.omniful').first()
+        if not admin:
+            admin = User(
+                username='Mahmoud Portal Admin',
+                email='mahmoud@portal.omniful',
+                role='Portal Administrator'
+            )
+            admin.set_password('Admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print("Admin user created successfully")
+        else:
+            print("Admin user already exists")
+    except Exception as e:
+        # If admin user already exists (race condition with multiple workers), rollback and continue
+        db.session.rollback()
+        print(f"Database initialization: {str(e)}")
+        print("Continuing with existing database...")
 
