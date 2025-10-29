@@ -19,6 +19,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --no-frozen-
 # Copy application code
 COPY . .
 
+# Set environment variable for build (use relative path for Nginx proxy)
+ENV VITE_API_BASE_URL=/api
+
 # Build the application
 RUN pnpm run build
 
