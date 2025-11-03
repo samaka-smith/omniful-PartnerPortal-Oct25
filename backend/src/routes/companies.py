@@ -21,12 +21,25 @@ def create_company():
     try:
         data = request.get_json()
         
-        if 'name' not in data:
-            return jsonify({'error': 'Company name is required'}), 400
+        # Validate required fields
+        required_fields = ['name', 'company_type', 'contact_email', 'spoc_name', 'spoc_email', 
+                          'country', 'serving_regions', 'partner_stage']
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        if missing_fields:
+            return jsonify({'error': f'Required fields missing: {", ".join(missing_fields)}'}), 400
         
-        # Check if company already exists
+        # Check for duplicates
         if Company.query.filter_by(name=data['name']).first():
             return jsonify({'error': 'Company with this name already exists'}), 400
+        
+        if data.get('spoc_email') and Company.query.filter_by(spoc_email=data['spoc_email']).first():
+            return jsonify({'error': 'A company with this SPOC email already exists'}), 400
+        
+        if data.get('contact_email') and Company.query.filter_by(contact_email=data['contact_email']).first():
+            return jsonify({'error': 'A company with this email already exists'}), 400
+        
+        if data.get('website') and Company.query.filter_by(website=data['website']).first():
+            return jsonify({'error': 'A company with this website already exists'}), 400
         
         # Handle tags - convert array to comma-separated string
         tags_str = ''
@@ -76,22 +89,35 @@ def update_company(company_id):
         
         data = request.get_json()
         
-        if 'name' in data:
+        # Check for duplicates when updating
+        if 'name' in data and data['name'] != company.name:
+            if Company.query.filter_by(name=data['name']).first():
+                return jsonify({'error': 'Company with this name already exists'}), 400
             company.name = data['name']
+        
+        if 'spoc_email' in data and data['spoc_email'] != company.spoc_email:
+            if Company.query.filter_by(spoc_email=data['spoc_email']).first():
+                return jsonify({'error': 'A company with this SPOC email already exists'}), 400
+            company.spoc_email = data['spoc_email']
+        
+        if 'contact_email' in data and data['contact_email'] != company.contact_email:
+            existing = Company.query.filter_by(contact_email=data['contact_email']).first()
+            if existing:
+                return jsonify({'error': 'A company with this email already exists'}), 400
+            company.contact_email = data['contact_email']
+        
+        if 'website' in data and data['website'] != company.website:
+            if Company.query.filter_by(website=data['website']).first():
+                return jsonify({'error': 'A company with this website already exists'}), 400
+            company.website = data['website']
         if 'company_type' in data:
             company.company_type = data['company_type']
-        if 'website' in data:
-            company.website = data['website']
-        if 'contact_email' in data or 'email' in data:
-            company.contact_email = data.get('contact_email') or data.get('email')
         if 'contact_phone' in data or 'phone_number' in data:
             company.contact_phone = data.get('contact_phone') or data.get('phone_number')
         if 'logo_url' in data:
             company.logo_url = data['logo_url']
         if 'spoc_name' in data:
             company.spoc_name = data['spoc_name']
-        if 'spoc_email' in data:
-            company.spoc_email = data['spoc_email']
         if 'spoc_phone' in data:
             company.spoc_phone = data['spoc_phone']
         if 'country' in data:

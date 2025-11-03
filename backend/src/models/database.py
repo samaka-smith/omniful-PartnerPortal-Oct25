@@ -7,6 +7,13 @@ import bcrypt
 
 db = SQLAlchemy()
 
+# Association table for PAM-Company many-to-many relationship
+pam_company_assignments = db.Table('pam_company_assignments',
+    db.Column('pam_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('company_id', db.Integer, db.ForeignKey('companies.id'), primary_key=True),
+    db.Column('assigned_at', db.DateTime, default=datetime.utcnow)
+)
+
 class User(db.Model):
     __tablename__ = 'users'
     
@@ -16,7 +23,13 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=True)
+    phone_number = db.Column(db.String(50))
+    photo_url = db.Column(db.String(500))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship for PAM multi-company assignments
+    assigned_companies = db.relationship('Company', secondary=pam_company_assignments,
+                                        backref=db.backref('assigned_pams', lazy='dynamic'))
     
     def set_password(self, password):
         self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -25,12 +38,27 @@ class User(db.Model):
         return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
     
     def to_dict(self):
+        # Get assigned companies for PAM role
+        assigned_company_ids = []
+        if self.role == 'PAM':
+            assigned_company_ids = [c.id for c in self.assigned_companies]
+        
+        # Get company info if user is assigned to a company
+        company_name = None
+        if self.company_id:
+            company = Company.query.get(self.company_id)
+            company_name = company.name if company else None
+        
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'role': self.role,
             'company_id': self.company_id,
+            'company_name': company_name,
+            'phone_number': self.phone_number,
+            'photo_url': self.photo_url,
+            'assigned_company_ids': assigned_company_ids,  # For PAM multi-company assignment
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

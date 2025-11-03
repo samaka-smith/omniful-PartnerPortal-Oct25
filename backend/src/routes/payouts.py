@@ -80,3 +80,46 @@ def reject_payout(payout_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/summary', methods=['GET'])
+def get_payouts_summary():
+    """Get payout summary grouped by company"""
+    try:
+        # Get all companies
+        companies = Company.query.all()
+        
+        summary = []
+        for company in companies:
+            # Get open deals for this company (20% payout based on open deals)
+            open_deals = Deal.query.filter_by(
+                company_id=company.id,
+                status='Open'
+            ).all()
+            
+            if not open_deals:
+                continue
+            
+            # Calculate totals
+            deals_count = len(open_deals)
+            total_deals_value = sum(deal.revenue_arr or 0 for deal in open_deals)
+            payout_amount = total_deals_value * 0.20  # 20% of deal value
+            
+            # Get PAM info
+            pam = User.query.get(company.pam_id) if company.pam_id else None
+            pam_name = pam.username if pam else 'Unassigned'
+            
+            summary.append({
+                'company_id': company.id,
+                'company_name': company.name,
+                'pam_name': pam_name,
+                'deals_count': deals_count,
+                'total_deals_value': total_deals_value,
+                'payout_amount': payout_amount,
+                'calculated_payout': payout_amount,  # Same as payout_amount
+                'progress_percentage': min(100, (payout_amount / (total_deals_value or 1)) * 100)
+            })
+        
+        return jsonify(summary), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
