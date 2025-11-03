@@ -188,7 +188,8 @@ export default function Users() {
   const handlePamAssignClick = (pam: any) => {
     setSelectedUser(pam);
     const assignment = pamAssignments.find(a => a.pam_id === pam.id);
-    const companyIds = assignment && assignment.company_id ? [assignment.company_id] : [];
+    // Support multiple companies
+    const companyIds = assignment?.assigned_company_ids || [];
     setSelectedPamCompanies(companyIds);
     setIsPamAssignDialogOpen(true);
   };
@@ -197,13 +198,12 @@ export default function Users() {
     e.preventDefault();
     
     try {
-      // PAM can only be assigned to one company
-      const companyId = selectedPamCompanies.length > 0 ? selectedPamCompanies[0] : null;
+      // PAM can be assigned to multiple companies
       await apiRequest(`/pam-assignments`, {
         method: 'POST',
         body: JSON.stringify({ 
-          pam_id: selectedUser.id,
-          company_id: companyId 
+          pam_id: selectedUser.id, 
+          company_ids: selectedPamCompanies 
         }),
       });
       toast.success('PAM assignments updated successfully');
@@ -411,7 +411,7 @@ export default function Users() {
                       <tr className="border-b">
                         <th className="text-left py-3 px-4">PAM Name</th>
                         <th className="text-left py-3 px-4">Email</th>
-                        <th className="text-left py-3 px-4">Assigned Company</th>
+                        <th className="text-left py-3 px-4">Assigned Companies</th>
                         <th className="text-center py-3 px-4">Actions</th>
                       </tr>
                     </thead>
@@ -421,12 +421,16 @@ export default function Users() {
                           <td className="py-3 px-4 font-medium">{assignment.pam_name}</td>
                           <td className="py-3 px-4 text-sm text-gray-600">{assignment.pam_email}</td>
                           <td className="py-3 px-4">
-                            {assignment.company_name ? (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                                {assignment.company_name}
-                              </span>
+                            {assignment.assigned_company_names && assignment.assigned_company_names.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {assignment.assigned_company_names.map((name: string, idx: number) => (
+                                  <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                    {name}
+                                  </span>
+                                ))}
+                              </div>
                             ) : (
-                              <span className="text-gray-500 text-sm">No company assigned</span>
+                              <span className="text-gray-500 text-sm">No companies assigned</span>
                             )}
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -670,34 +674,26 @@ export default function Users() {
       <Dialog open={isPamAssignDialogOpen} onOpenChange={setIsPamAssignDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Assign Company to {selectedUser?.username}</DialogTitle>
+            <DialogTitle>Assign Companies to {selectedUser?.username}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handlePamAssignSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Select Company (Only one company can be assigned)</Label>
+              <Label>Select Companies (PAM can manage multiple companies)</Label>
+              <div className="text-sm text-gray-600 mb-2">
+                Selected: {selectedPamCompanies.length} {selectedPamCompanies.length === 1 ? 'company' : 'companies'}
+              </div>
               <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
                 {companies.map(company => (
                   <label key={company.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                     <input
-                      type="radio"
-                      name="pam_company"
+                      type="checkbox"
                       checked={selectedPamCompanies.includes(company.id)}
-                      onChange={() => setSelectedPamCompanies([company.id])}
+                      onChange={() => toggleCompanySelection(company.id)}
                       className="w-4 h-4"
                     />
                     <span>{company.name}</span>
                   </label>
                 ))}
-                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                  <input
-                    type="radio"
-                    name="pam_company"
-                    checked={selectedPamCompanies.length === 0}
-                    onChange={() => setSelectedPamCompanies([])}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-gray-500">No company (unassign)</span>
-                </label>
               </div>
             </div>
             <div className="flex justify-end gap-2">
