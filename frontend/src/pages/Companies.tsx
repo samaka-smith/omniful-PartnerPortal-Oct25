@@ -34,6 +34,7 @@ export default function Companies() {
     published_on_website: false,
     tags: '',
     assigned_pam_id: '',
+    payout_percentage: '0',
   });
 
   useEffect(() => {
@@ -104,6 +105,7 @@ export default function Companies() {
       published_on_website: company.published_on_website || false,
       tags: Array.isArray(company.tags) ? company.tags.join(', ') : (company.tags || ''),
       assigned_pam_id: company.assigned_pam_id?.toString() || '',
+      payout_percentage: company.payout_percentage?.toString() || '0',
     });
     setIsDialogOpen(true);
   };
@@ -137,6 +139,7 @@ export default function Companies() {
       published_on_website: false,
       tags: '',
       assigned_pam_id: '',
+      payout_percentage: '0',
     });
     setEditingCompany(null);
   };
@@ -185,6 +188,15 @@ export default function Companies() {
                       <div><strong>Country:</strong> {company.country}</div>
                       <div className="col-span-2"><strong>PAM:</strong> {company.pam_name || 'Unassigned'}</div>
                     </div>
+                    {company.tags && company.tags.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {company.tags.map((tag: string, index: number) => (
+                          <span key={index} className="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(company)}>
@@ -372,6 +384,21 @@ export default function Companies() {
                   value={formData.tags}
                   onChange={(e) => setFormData({...formData, tags: e.target.value})}
                   placeholder="Active, Aligned, Premium"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="payout_percentage">Payout Percentage (%) *</Label>
+                <Input
+                  id="payout_percentage"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={formData.payout_percentage}
+                  onChange={(e) => setFormData({...formData, payout_percentage: e.target.value})}
+                  placeholder="10"
+                  required
                 />
               </div>
 

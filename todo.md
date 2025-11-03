@@ -124,3 +124,34 @@
 - [ ] Test Payouts section
 - [ ] Test all Dashboard views for each role
 - [ ] Test Targets section visibility and Create button
+
+
+## New Requirements - Phase 3
+
+### Targets Section Enhancements
+- [x] Add "Create Target" button (Portal Admin only)
+- [x] Target types: PAM, Partner SPOC Admin, Partner Company
+- [x] Target metrics: No. of Deals Won, Value of Forecasted Revenue, No. of Deals Opened
+- [x] Target periods: Monthly, Quarterly, Yearly
+- [x] Backend: Target model already has proper schema
+- [x] Frontend: Create Target creation dialog with all fields
+
+### Payouts Section Fixes
+- [ ] Fix payout calculation failure when creating deals
+- [ ] Implement percentage-based payout system
+- [ ] Portal Admin can set payout percentage per partner
+- [ ] Backend: Add payout_percentage to Company model
+- [ ] Backend: Update payout calculation logic
+- [ ] Frontend: Add payout percentage field in Companies form
+
+### Companies Section Enhancements
+- [ ] Display tags in company card view
+- [ ] Sync PAM assignment to PAM Assignments when creating/editing company
+- [ ] Only Portal Admin can edit PAM assignments
+
+### Dashboard Enhancements
+- [ ] Add graphs for deals (Open, Won, In Progress, Lost)
+- [ ] Add graph for targets vs actual revenue
+- [ ] PAM dashboard: Show data for assigned companies only
+- [ ] Partner SPOC Admin dashboard: Show single company data vs average
+- [ ] Portal Admin dashboard: Detailed analytics with drill-down

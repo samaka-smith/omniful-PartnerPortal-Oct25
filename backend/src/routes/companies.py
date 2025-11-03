@@ -64,11 +64,28 @@ def create_company():
             partner_stage=data.get('partner_stage', 'Registered'),
             published=data.get('published') or data.get('published_on_website', False),  # Support both field names
             tags=tags_str,
-            pam_id=data.get('pam_id') or data.get('assigned_pam_id')  # Support both field names
+            pam_id=data.get('pam_id') or data.get('assigned_pam_id'),  # Support both field names
+            payout_percentage=float(data.get('payout_percentage', 0.0))
         )
         
         db.session.add(company)
         db.session.commit()
+        
+        # Sync PAM assignment if PAM is assigned
+        if company.pam_id:
+            from src.models.database import PAMCompanyAssignment
+            # Check if assignment already exists
+            existing = PAMCompanyAssignment.query.filter_by(
+                pam_id=company.pam_id,
+                company_id=company.id
+            ).first()
+            if not existing:
+                assignment = PAMCompanyAssignment(
+                    pam_id=company.pam_id,
+                    company_id=company.id
+                )
+                db.session.add(assignment)
+                db.session.commit()
         
         return jsonify({
             'message': 'Company created successfully',
@@ -135,7 +152,33 @@ def update_company(company_id):
             else:
                 company.tags = data['tags']
         if 'pam_id' in data or 'assigned_pam_id' in data:
-            company.pam_id = data.get('pam_id') or data.get('assigned_pam_id')
+            old_pam_id = company.pam_id
+            new_pam_id = data.get('pam_id') or data.get('assigned_pam_id')
+            company.pam_id = new_pam_id
+            
+            # Sync PAM assignment
+            if new_pam_id != old_pam_id:
+                from src.models.database import PAMCompanyAssignment
+                # Remove old assignment if exists
+                if old_pam_id:
+                    PAMCompanyAssignment.query.filter_by(
+                        pam_id=old_pam_id,
+                        company_id=company.id
+                    ).delete()
+                # Add new assignment if PAM is assigned
+                if new_pam_id:
+                    existing = PAMCompanyAssignment.query.filter_by(
+                        pam_id=new_pam_id,
+                        company_id=company.id
+                    ).first()
+                    if not existing:
+                        assignment = PAMCompanyAssignment(
+                            pam_id=new_pam_id,
+                            company_id=company.id
+                        )
+                        db.session.add(assignment)
+        if 'payout_percentage' in data:
+            company.payout_percentage = float(data['payout_percentage'])
         
         db.session.commit()
         

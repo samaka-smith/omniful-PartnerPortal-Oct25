@@ -80,7 +80,8 @@ class Company(db.Model):
     partner_stage = db.Column(db.String(50), default='Registered')  # Registered, Implementing, Reseller, Strategic
     published = db.Column(db.Boolean, default=False)
     tags = db.Column(db.String(500))  # Comma-separated tags
-    pam_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    pam_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    payout_percentage = db.Column(db.Float, default=0.0)  # Percentage for payouts
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
@@ -113,6 +114,7 @@ class Company(db.Model):
             'pam_id': self.pam_id,
             'assigned_pam_id': self.pam_id,  # Alias for frontend compatibility
             'pam_name': pam_name,
+            'payout_percentage': self.payout_percentage or 0.0,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

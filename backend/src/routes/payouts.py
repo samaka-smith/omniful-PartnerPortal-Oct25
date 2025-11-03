@@ -21,8 +21,9 @@ def get_payouts():
             if not company:
                 continue
                 
-            # Calculate payout (example: 10% commission)
-            payout_amount = deal.revenue_arr * 0.10
+            # Calculate payout using company-specific percentage
+            payout_percentage = (company.payout_percentage or 0.0) / 100.0
+            payout_amount = deal.revenue_arr * payout_percentage
             
             payouts.append({
                 'id': deal.id,
@@ -47,7 +48,12 @@ def calculate_payouts():
     try:
         won_deals = Deal.query.filter_by(status='Won').all()
         
-        total_payouts = sum(deal.revenue_arr * 0.10 for deal in won_deals)
+        total_payouts = 0
+        for deal in won_deals:
+            company = Company.query.get(deal.company_id)
+            if company:
+                payout_percentage = (company.payout_percentage or 0.0) / 100.0
+                total_payouts += deal.revenue_arr * payout_percentage
         
         return jsonify({
             'message': 'Payouts calculated successfully',
@@ -101,7 +107,9 @@ def get_payouts_summary():
             # Calculate totals
             deals_count = len(open_deals)
             total_deals_value = sum(deal.revenue_arr or 0 for deal in open_deals)
-            payout_amount = total_deals_value * 0.20  # 20% of deal value
+            # Use company-specific payout percentage
+            payout_percentage = (company.payout_percentage or 0.0) / 100.0
+            payout_amount = total_deals_value * payout_percentage
             
             # Get PAM info
             pam = User.query.get(company.pam_id) if company.pam_id else None
