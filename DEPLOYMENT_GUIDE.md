@@ -31,8 +31,12 @@
 git clone https://github.com/YOUR_USERNAME/omniful-PartnerPortal-Oct25.git
 cd omniful-PartnerPortal-Oct25
 
-# Start all services
+# Start all services (this will create the database with correct schema)
 docker-compose up -d
+
+# NOTE: If you have an existing database and want to preserve data,
+# run the migration script BEFORE starting services:
+# cd backend && python3 migrate_add_company_fields.py && cd ..
 
 # Check status
 docker-compose ps
