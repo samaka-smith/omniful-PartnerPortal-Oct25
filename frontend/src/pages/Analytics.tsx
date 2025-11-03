@@ -30,15 +30,25 @@ export default function Analytics() {
   };
 
   const filteredDeals = filterCompanyId
-    ? deals.filter(d => d.partner_company_id === parseInt(filterCompanyId))
+    ? deals.filter(d => d.company_id === parseInt(filterCompanyId))
     : deals;
 
   const stats = {
     totalDeals: filteredDeals.length,
     wonDeals: filteredDeals.filter(d => d.status === 'Won').length,
-    totalRevenue: filteredDeals.reduce((sum, d) => sum + (d.revenue_arr || 0), 0),
+    lostDeals: filteredDeals.filter(d => d.status === 'Lost').length,
+    inProgressDeals: filteredDeals.filter(d => d.status === 'In Progress').length,
+    openDeals: filteredDeals.filter(d => d.status === 'Open').length,
+    // Total Revenue excludes Lost deals
+    totalRevenue: filteredDeals
+      .filter(d => d.status !== 'Lost')
+      .reduce((sum, d) => sum + (d.revenue_arr || 0), 0),
     wonRevenue: filteredDeals
       .filter(d => d.status === 'Won')
+      .reduce((sum, d) => sum + (d.revenue_arr || 0), 0),
+    // Expected Revenue: non-won, non-lost deals
+    expectedRevenue: filteredDeals
+      .filter(d => d.status !== 'Won' && d.status !== 'Lost')
       .reduce((sum, d) => sum + (d.revenue_arr || 0), 0),
   };
 
@@ -63,6 +73,27 @@ export default function Analytics() {
       bgColor: 'bg-green-50',
     },
     {
+      title: 'Lost Deals',
+      value: stats.lostDeals,
+      icon: TrendingUp,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+    },
+    {
+      title: 'In Progress Deals',
+      value: stats.inProgressDeals,
+      icon: Briefcase,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
+    },
+    {
+      title: 'Open Deals',
+      value: stats.openDeals,
+      icon: Briefcase,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+    },
+    {
       title: 'Total Revenue',
       value: `$${stats.totalRevenue.toLocaleString()}`,
       icon: DollarSign,
@@ -75,6 +106,13 @@ export default function Analytics() {
       icon: DollarSign,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
+    },
+    {
+      title: 'Expected Revenue',
+      value: `$${stats.expectedRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
     },
   ];
 
@@ -167,7 +205,7 @@ export default function Analytics() {
               {companies
                 .filter(c => !filterCompanyId || c.id === parseInt(filterCompanyId))
                 .map(company => {
-                  const companyDeals = deals.filter(d => d.partner_company_id === company.id);
+                  const companyDeals = deals.filter(d => d.company_id === company.id);
                   const companyRevenue = companyDeals.reduce(
                     (sum, d) => sum + (d.revenue_arr || 0),
                     0

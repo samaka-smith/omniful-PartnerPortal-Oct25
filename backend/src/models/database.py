@@ -39,9 +39,17 @@ class Company(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
+    company_type = db.Column(db.String(50), default='Partner')  # Partner, Customer, Affiliate
     website = db.Column(db.String(255))
     contact_email = db.Column(db.String(120))
     contact_phone = db.Column(db.String(50))
+    logo_url = db.Column(db.String(500))
+    spoc_name = db.Column(db.String(100))
+    spoc_email = db.Column(db.String(120))
+    spoc_phone = db.Column(db.String(50))
+    country = db.Column(db.String(100))
+    serving_regions = db.Column(db.String(500))
+    partner_stage = db.Column(db.String(50), default='Registered')  # Registered, Implementing, Reseller, Strategic
     published = db.Column(db.Boolean, default=False)
     tags = db.Column(db.String(500))  # Comma-separated tags
     pam_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
@@ -60,12 +68,22 @@ class Company(db.Model):
         return {
             'id': self.id,
             'name': self.name,
+            'company_type': self.company_type,
             'website': self.website,
             'contact_email': self.contact_email,
             'contact_phone': self.contact_phone,
+            'logo_url': self.logo_url,
+            'spoc_name': self.spoc_name,
+            'spoc_email': self.spoc_email,
+            'spoc_phone': self.spoc_phone,
+            'country': self.country,
+            'serving_regions': self.serving_regions,
+            'partner_stage': self.partner_stage,
             'published': self.published if self.published is not None else False,
+            'published_on_website': self.published if self.published is not None else False,  # Alias for frontend compatibility
             'tags': tags_array,
             'pam_id': self.pam_id,
+            'assigned_pam_id': self.pam_id,  # Alias for frontend compatibility
             'pam_name': pam_name,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

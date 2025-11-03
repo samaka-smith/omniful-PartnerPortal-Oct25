@@ -148,7 +148,7 @@ export default function Users() {
     }
 
     try {
-      await apiRequest(`/users/${selectedUser.id}/edit`, {
+      await apiRequest(`/users/${selectedUser.id}`, {
         method: 'PUT',
         body: JSON.stringify({
           ...editFormData,
@@ -173,8 +173,8 @@ export default function Users() {
     e.preventDefault();
     
     try {
-      await apiRequest(`/users/${selectedUser.id}/photo`, {
-        method: 'POST',
+      await apiRequest(`/users/${selectedUser.id}`, {
+        method: 'PUT',
         body: JSON.stringify({ photo_url: photoUrl }),
       });
       toast.success('Photo uploaded successfully');
@@ -188,7 +188,7 @@ export default function Users() {
   const handlePamAssignClick = (pam: any) => {
     setSelectedUser(pam);
     const assignment = pamAssignments.find(a => a.pam_id === pam.id);
-    const companyIds = assignment ? assignment.assigned_companies.map((c: any) => c.id) : [];
+    const companyIds = assignment && assignment.company_id ? [assignment.company_id] : [];
     setSelectedPamCompanies(companyIds);
     setIsPamAssignDialogOpen(true);
   };
@@ -197,9 +197,14 @@ export default function Users() {
     e.preventDefault();
     
     try {
-      await apiRequest(`/users/${selectedUser.id}/companies`, {
+      // PAM can only be assigned to one company
+      const companyId = selectedPamCompanies.length > 0 ? selectedPamCompanies[0] : null;
+      await apiRequest(`/pam-assignments`, {
         method: 'POST',
-        body: JSON.stringify({ company_ids: selectedPamCompanies }),
+        body: JSON.stringify({ 
+          pam_id: selectedUser.id,
+          company_id: companyId 
+        }),
       });
       toast.success('PAM assignments updated successfully');
       setIsPamAssignDialogOpen(false);
@@ -656,6 +661,50 @@ export default function Users() {
                 Cancel
               </Button>
               <Button type="submit">Upload Photo</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* PAM Assignment Dialog */}
+      <Dialog open={isPamAssignDialogOpen} onOpenChange={setIsPamAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Company to {selectedUser?.username}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handlePamAssignSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Select Company (Only one company can be assigned)</Label>
+              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                {companies.map(company => (
+                  <label key={company.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                    <input
+                      type="radio"
+                      name="pam_company"
+                      checked={selectedPamCompanies.includes(company.id)}
+                      onChange={() => setSelectedPamCompanies([company.id])}
+                      className="w-4 h-4"
+                    />
+                    <span>{company.name}</span>
+                  </label>
+                ))}
+                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                  <input
+                    type="radio"
+                    name="pam_company"
+                    checked={selectedPamCompanies.length === 0}
+                    onChange={() => setSelectedPamCompanies([])}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-gray-500">No company (unassign)</span>
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsPamAssignDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save Assignment</Button>
             </div>
           </form>
         </DialogContent>

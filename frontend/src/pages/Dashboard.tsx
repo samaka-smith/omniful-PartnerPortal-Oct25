@@ -25,9 +25,10 @@ export default function Dashboard() {
         dealsAPI.getAll(),
       ]);
 
-      const totalRevenue = deals.reduce((sum, deal) => 
-        sum + (deal.revenue_arr_estimation || 0), 0
-      );
+      // Total Revenue excludes Lost deals
+      const totalRevenue = deals
+        .filter(deal => deal.status !== 'Lost')
+        .reduce((sum, deal) => sum + (deal.revenue_arr || 0), 0);
 
       setStats({
         totalCompanies: companies.length,

@@ -34,6 +34,8 @@ export default function Deals() {
     customer_email: '',
     revenue_arr: '',
     comments: '',
+    proof_of_engagement: '',
+    status_change_comment: '',
   });
 
   const [addFormData, setAddFormData] = useState({
@@ -112,18 +114,36 @@ export default function Deals() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // If status changed, require proof and comment
+    if (editFormData.status !== selectedDeal.status) {
+      if (!editFormData.proof_of_engagement || editFormData.proof_of_engagement.trim() === '') {
+        toast.error('Proof of Engagement is required when changing deal status');
+        return;
+      }
+      if (!editFormData.status_change_comment || editFormData.status_change_comment.trim() === '') {
+        toast.error('Comment is required when changing deal status');
+        return;
+      }
+    }
+    
     try {
+      // Update deal with proof if provided
+      const updatePayload = {
+        ...editFormData,
+        proof_of_engagement: editFormData.proof_of_engagement || selectedDeal.proof_of_engagement,
+      };
+      
       await apiRequest(`/deals/${selectedDeal.id}`, {
         method: 'PUT',
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(updatePayload),
       });
 
-      // If status changed, add a note
+      // If status changed, add a note with comment
       if (editFormData.status !== selectedDeal.status) {
         await apiRequest(`/deals/${selectedDeal.id}/notes`, {
           method: 'POST',
           body: JSON.stringify({
-            note_text: `Status changed from ${selectedDeal.status} to ${editFormData.status}`,
+            note_text: editFormData.status_change_comment,
             note_type: 'status_change',
             old_status: selectedDeal.status,
             new_status: editFormData.status,
@@ -660,6 +680,40 @@ export default function Deals() {
                   rows={3}
                 />
               </div>
+
+              {/* Show these fields only when status is being changed */}
+              {editFormData.status !== selectedDeal?.status && (
+                <div className="border-t pt-4 space-y-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                    <p className="text-sm font-medium text-yellow-800">⚠️ Status Change Detected</p>
+                    <p className="text-xs text-yellow-700 mt-1">Proof of Engagement and Comment are required when changing deal status</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="proof_of_engagement">Proof of Engagement URL * (Required for status change)</Label>
+                    <Input
+                      id="proof_of_engagement"
+                      type="url"
+                      value={editFormData.proof_of_engagement}
+                      onChange={(e) => setEditFormData({ ...editFormData, proof_of_engagement: e.target.value })}
+                      placeholder="https://example.com/proof.pdf"
+                      required={editFormData.status !== selectedDeal?.status}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status_change_comment">Status Change Comment * (Required for status change)</Label>
+                    <Textarea
+                      id="status_change_comment"
+                      value={editFormData.status_change_comment}
+                      onChange={(e) => setEditFormData({ ...editFormData, status_change_comment: e.target.value })}
+                      rows={3}
+                      placeholder="Explain why the status is being changed..."
+                      required={editFormData.status !== selectedDeal?.status}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
