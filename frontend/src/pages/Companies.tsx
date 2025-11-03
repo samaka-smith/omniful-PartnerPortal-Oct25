@@ -20,19 +20,12 @@ export default function Companies() {
   
   const [formData, setFormData] = useState({
     name: '',
-    company_type: 'Partner',
-    email: '',
-    phone_number: '',
-    logo_url: '',
-    spoc_name: '',
-    spoc_email: '',
-    spoc_phone: '',
-    country: '',
-    serving_regions: '',
-    partner_stage: 'Registered',
+    website: '',
+    contact_email: '',
+    contact_phone: '',
+    published: false,
     tags: '',
-    published_on_website: false,
-    assigned_pam_id: '',
+    pam_id: '',
   });
 
   useEffect(() => {
@@ -65,8 +58,13 @@ export default function Companies() {
     
     try {
       const payload = {
-        ...formData,
-        assigned_pam_id: formData.assigned_pam_id ? parseInt(formData.assigned_pam_id) : null,
+        name: formData.name,
+        website: formData.website || null,
+        contact_email: formData.contact_email || null,
+        contact_phone: formData.contact_phone || null,
+        published: formData.published,
+        tags: formData.tags,
+        pam_id: formData.pam_id ? parseInt(formData.pam_id) : null,
       };
 
       if (editingCompany) {
@@ -89,19 +87,12 @@ export default function Companies() {
     setEditingCompany(company);
     setFormData({
       name: company.name || '',
-      company_type: company.company_type || 'Partner',
-      email: company.email || '',
-      phone_number: company.phone_number || '',
-      logo_url: company.logo_url || '',
-      spoc_name: company.spoc_name || '',
-      spoc_email: company.spoc_email || '',
-      spoc_phone: company.spoc_phone || '',
-      country: company.country || '',
-      serving_regions: company.serving_regions || '',
-      partner_stage: company.partner_stage || 'Registered',
+      website: company.website || '',
+      contact_email: company.contact_email || '',
+      contact_phone: company.contact_phone || '',
+      published: company.published || false,
       tags: Array.isArray(company.tags) ? company.tags.join(', ') : (company.tags || ''),
-      published_on_website: company.published_on_website || false,
-      assigned_pam_id: company.assigned_pam_id?.toString() || '',
+      pam_id: company.pam_id?.toString() || '',
     });
     setIsDialogOpen(true);
   };
@@ -122,19 +113,12 @@ export default function Companies() {
     setEditingCompany(null);
     setFormData({
       name: '',
-      company_type: 'Partner',
-      email: '',
-      phone_number: '',
-      logo_url: '',
-      spoc_name: '',
-      spoc_email: '',
-      spoc_phone: '',
-      country: '',
-      serving_regions: '',
-      partner_stage: 'Registered',
+      website: '',
+      contact_email: '',
+      contact_phone: '',
+      published: false,
       tags: '',
-      published_on_website: false,
-      assigned_pam_id: '',
+      pam_id: '',
     });
   };
 
@@ -174,7 +158,7 @@ export default function Companies() {
                   <div className="space-y-2">
                     <Label htmlFor="company_type">Company Type</Label>
                     <Select
-                      value={formData.company_type}
+                      value={formData.website}
                       onValueChange={(value) => setFormData({ ...formData, company_type: value })}
                     >
                       <SelectTrigger>
@@ -195,7 +179,7 @@ export default function Companies() {
                     <Input
                       id="email"
                       type="email"
-                      value={formData.email}
+                      value={formData.contact_email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
                   </div>
@@ -203,7 +187,7 @@ export default function Companies() {
                     <Label htmlFor="phone_number">Phone Number</Label>
                     <Input
                       id="phone_number"
-                      value={formData.phone_number}
+                      value={formData.contact_phone}
                       onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                     />
                   </div>
@@ -288,7 +272,7 @@ export default function Companies() {
                   <div className="space-y-2">
                     <Label htmlFor="assigned_pam_id">Assigned PAM</Label>
                     <Select
-                      value={formData.assigned_pam_id}
+                      value={formData.pam_id}
                       onValueChange={(value) => setFormData({ ...formData, assigned_pam_id: value })}
                     >
                       <SelectTrigger>
@@ -319,7 +303,7 @@ export default function Companies() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="published_on_website"
-                    checked={formData.published_on_website}
+                    checked={formData.published}
                     onCheckedChange={(checked) => 
                       setFormData({ ...formData, published_on_website: checked as boolean })
                     }
@@ -364,7 +348,7 @@ export default function Companies() {
                           <span className="text-sm px-2 py-1 bg-green-100 text-green-700 rounded">
                             {company.partner_stage}
                           </span>
-                          {company.published_on_website ? (
+                          {company.published ? (
                             <span className="text-sm px-2 py-1 bg-purple-100 text-purple-700 rounded">
                               Published
                             </span>

@@ -19,7 +19,7 @@ export default function Payouts() {
   const loadPayouts = async () => {
     try {
       const response = await apiRequest<any[]>('/payouts');
-      setPayouts(response);
+      setPayouts(response || []);
     } catch (error: any) {
       toast.error('Failed to load payouts');
     } finally {
@@ -30,7 +30,7 @@ export default function Payouts() {
   const loadSummary = async () => {
     try {
       const response = await apiRequest<any[]>('/payouts/summary');
-      setSummary(response);
+      setSummary(response || []);
     } catch (error: any) {
       console.error('Failed to load summary');
     }
@@ -84,7 +84,7 @@ export default function Payouts() {
               <div>
                 <p className="text-sm text-gray-600">Total Payout Amount</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ${summary.reduce((sum, s) => sum + s.payout_amount, 0).toLocaleString()}
+                  ${summary.reduce((sum, s) => sum + (s?.payout_amount || 0), 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function Payouts() {
               <div>
                 <p className="text-sm text-gray-600">Total Deals Value</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ${summary.reduce((sum, s) => sum + s.total_deals_value, 0).toLocaleString()}
+                  ${summary.reduce((sum, s) => sum + (s?.total_deals_value || 0), 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -143,14 +143,14 @@ export default function Payouts() {
                 <tbody>
                   {summary.map((item, index) => (
                     <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">{item.company_name}</td>
-                      <td className="py-3 px-4 text-gray-600">{item.pam_name}</td>
-                      <td className="py-3 px-4 text-right">{item.deals_count}</td>
+                      <td className="py-3 px-4 font-medium">{item?.company_name || 'N/A'}</td>
+                      <td className="py-3 px-4 text-gray-600">{item?.pam_name || 'N/A'}</td>
+                      <td className="py-3 px-4 text-right">{item?.deals_count || 0}</td>
                       <td className="py-3 px-4 text-right">
-                        ${item.total_deals_value.toLocaleString()}
+                        ${(item?.total_deals_value || 0).toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-right font-semibold text-green-600">
-                        ${item.payout_amount.toLocaleString()}
+                        ${(item?.payout_amount || 0).toLocaleString()}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-2">

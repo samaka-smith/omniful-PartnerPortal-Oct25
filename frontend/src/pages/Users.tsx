@@ -79,10 +79,12 @@ export default function Users() {
 
   const loadPamAssignments = async () => {
     try {
-      const response = await apiRequest<any[]>('/users/pam-assignments');
-      setPamAssignments(response);
+      const response = await apiRequest<any>('/pam-assignments');
+      // Backend returns { assignments: [...], pams: [...], companies: [...] }
+      setPamAssignments(response.assignments || []);
     } catch (error: any) {
-      console.error('Failed to load PAM assignments');
+      console.error('Failed to load PAM assignments:', error);
+      setPamAssignments([]);
     }
   };
 
@@ -404,7 +406,7 @@ export default function Users() {
                       <tr className="border-b">
                         <th className="text-left py-3 px-4">PAM Name</th>
                         <th className="text-left py-3 px-4">Email</th>
-                        <th className="text-left py-3 px-4">Assigned Companies</th>
+                        <th className="text-left py-3 px-4">Assigned Company</th>
                         <th className="text-center py-3 px-4">Actions</th>
                       </tr>
                     </thead>
@@ -414,17 +416,13 @@ export default function Users() {
                           <td className="py-3 px-4 font-medium">{assignment.pam_name}</td>
                           <td className="py-3 px-4 text-sm text-gray-600">{assignment.pam_email}</td>
                           <td className="py-3 px-4">
-                            <div className="flex flex-wrap gap-1">
-                              {assignment.assigned_companies.length === 0 ? (
-                                <span className="text-gray-500 text-sm">No companies assigned</span>
-                              ) : (
-                                assignment.assigned_companies.map((company: any) => (
-                                  <span key={company.id} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                                    {company.name}
-                                  </span>
-                                ))
-                              )}
-                            </div>
+                            {assignment.company_name ? (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                {assignment.company_name}
+                              </span>
+                            ) : (
+                              <span className="text-gray-500 text-sm">No company assigned</span>
+                            )}
                           </td>
                           <td className="py-3 px-4 text-center">
                             {isPortalAdmin && (

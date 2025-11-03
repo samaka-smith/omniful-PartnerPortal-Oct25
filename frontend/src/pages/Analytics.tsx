@@ -36,10 +36,10 @@ export default function Analytics() {
   const stats = {
     totalDeals: filteredDeals.length,
     wonDeals: filteredDeals.filter(d => d.status === 'Won').length,
-    totalRevenue: filteredDeals.reduce((sum, d) => sum + (d.revenue_arr_estimation || 0), 0),
+    totalRevenue: filteredDeals.reduce((sum, d) => sum + (d.revenue_arr || 0), 0),
     wonRevenue: filteredDeals
       .filter(d => d.status === 'Won')
-      .reduce((sum, d) => sum + (d.revenue_arr_estimation || 0), 0),
+      .reduce((sum, d) => sum + (d.revenue_arr || 0), 0),
   };
 
   const dealsByStatus = filteredDeals.reduce((acc, deal) => {
@@ -169,7 +169,7 @@ export default function Analytics() {
                 .map(company => {
                   const companyDeals = deals.filter(d => d.partner_company_id === company.id);
                   const companyRevenue = companyDeals.reduce(
-                    (sum, d) => sum + (d.revenue_arr_estimation || 0),
+                    (sum, d) => sum + (d.revenue_arr || 0),
                     0
                   );
                   

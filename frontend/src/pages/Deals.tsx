@@ -32,7 +32,7 @@ export default function Deals() {
     customer_company_name: '',
     customer_spoc: '',
     customer_email: '',
-    revenue_arr_estimation: '',
+    revenue_arr: '',
     comments: '',
   });
 
@@ -44,7 +44,7 @@ export default function Deals() {
     customer_email: '',
     customer_spoc_email: '',
     customer_spoc_phone: '',
-    revenue_arr_estimation: '',
+    revenue_arr: '',
     status: 'Open',
     comments: '',
   });
@@ -103,7 +103,7 @@ export default function Deals() {
       customer_company_name: deal.customer_company_name || '',
       customer_spoc: deal.customer_spoc || '',
       customer_email: deal.customer_spoc_email || '',
-      revenue_arr_estimation: deal.revenue_arr_estimation || '',
+      revenue_arr: deal.revenue_arr || '',
       comments: deal.comments || '',
     });
     setIsEditDialogOpen(true);
@@ -161,7 +161,7 @@ export default function Deals() {
         toast.error('Customer SPOC email is required');
         return;
       }
-      if (!addFormData.revenue_arr_estimation) {
+      if (!addFormData.revenue_arr) {
         toast.error('Revenue estimation is required');
         return;
       }
@@ -174,7 +174,7 @@ export default function Deals() {
         customer_company_url: addFormData.customer_company_url || '',
         customer_spoc_email: addFormData.customer_spoc_email,
         customer_spoc_phone: addFormData.customer_spoc_phone || '',
-        revenue_arr: parseFloat(addFormData.revenue_arr_estimation),
+        revenue_arr: parseFloat(addFormData.revenue_arr),
         status: addFormData.status,
         comments: addFormData.comments || '',
       };
@@ -202,7 +202,7 @@ export default function Deals() {
       customer_email: '',
       customer_spoc_email: '',
       customer_spoc_phone: '',
-      revenue_arr_estimation: '',
+      revenue_arr: '',
       status: 'Open',
       comments: '',
     });
@@ -333,7 +333,7 @@ export default function Deals() {
                 <td className="py-3 px-4">{deal.customer_spoc}</td>
                 <td className="py-3 px-4 text-sm text-gray-600">{deal.customer_spoc_email}</td>
                 <td className="py-3 px-4 text-right font-semibold">
-                  ${deal.revenue_arr_estimation?.toLocaleString() || '0'}
+                  ${deal.revenue_arr?.toLocaleString() || '0'}
                 </td>
                 <td className="py-3 px-4 text-center">
                   <span className={`px-3 py-1 rounded-full text-sm ${
@@ -538,13 +538,13 @@ export default function Deals() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="add_revenue_arr_estimation">Revenue (ARR) Estimation *</Label>
+                <Label htmlFor="add_revenue_arr">Revenue (ARR) Estimation *</Label>
                 <Input
-                  id="add_revenue_arr_estimation"
+                  id="add_revenue_arr"
                   type="number"
                   step="0.01"
-                  value={addFormData.revenue_arr_estimation}
-                  onChange={(e) => setAddFormData({ ...addFormData, revenue_arr_estimation: e.target.value })}
+                  value={addFormData.revenue_arr}
+                  onChange={(e) => setAddFormData({ ...addFormData, revenue_arr: e.target.value })}
                   placeholder="Enter estimated annual recurring revenue"
                   required
                 />
@@ -641,13 +641,13 @@ export default function Deals() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="revenue_arr_estimation">Revenue (ARR) Estimation</Label>
+                <Label htmlFor="revenue_arr">Revenue (ARR) Estimation</Label>
                 <Input
-                  id="revenue_arr_estimation"
+                  id="revenue_arr"
                   type="number"
                   step="0.01"
-                  value={editFormData.revenue_arr_estimation}
-                  onChange={(e) => setEditFormData({ ...editFormData, revenue_arr_estimation: e.target.value })}
+                  value={editFormData.revenue_arr}
+                  onChange={(e) => setEditFormData({ ...editFormData, revenue_arr: e.target.value })}
                 />
               </div>
 
